@@ -24,7 +24,7 @@ jobs:
       run: |
         echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-    - name: Build and push image (context: src/)
+    - name: Build and push image (context:src/)
       uses: docker/build-push-action@v4
       with:
         context: ./src
