@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}    # e.g. myregistry.azurecr.io
-  REPOSITORY: ${{ secrets.ACR_REPOSITORY }}    # set this secret to the image name (e.g. techworkshop-app)
+  REPOSITORY: ${{ secrets.ACR_REPOSITORY }}    # e.g. techworkshop-app
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
@@ -20,9 +20,12 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Docker login to ACR
-      run: |
-        echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+    - name: Login to Azure Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
 
     - name: Build and push image (context:src/)
       uses: docker/build-push-action@v4
@@ -32,32 +35,5 @@ jobs:
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.IMAGE_TAG }}
 
-    - name: Cleanup (no-op)
-      run: echo "Build complete". myregistry.azurecr.io
-  REPOSITORY: ${{ secrets.ACR_REPOSITORY }}    # set this secret to the image name (e.g. techworkshop-app)
-  IMAGE_TAG: ${{ github.sha }}
-
-jobs:
-  build_and_push:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Docker login to ACR
-      run: |
-        echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
-
-    - name: Build and push image (context:src/)
-      uses: docker/build-push-action@v4
-      with:
-        context: ./src
-        file: ./src/Dockerfile
-        push: true
-        tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.IMAGE_TAG }}
-
-    - name: Cleanup (no-op)
-      run: echo "Build complete"
+    - name: Completed
+      run: echo "Image built and pushed:${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.IMAGE_TAG }}"
